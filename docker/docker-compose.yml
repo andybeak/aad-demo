@@ -1,0 +1,58 @@
+version: '3'
+services:
+
+  webserver:
+    image: 'nginx:latest'
+    depends_on:
+    - php
+    restart: always
+    ports:
+      - "8000:80"
+    volumes:
+      - '../src/:/code'
+      - './config/nginx/nginx_default_site.conf:/etc/nginx/conf.d/default.conf'
+
+  php:
+    build:
+      context: .
+      dockerfile: php-dockerfile
+    container_name: php
+    depends_on:
+      - mysql
+    restart: always
+    volumes:
+      - '../src:/code'
+      - './config/php/php.ini:/usr/local/etc/php/conf.d/php_extra.ini'
+    environment:
+      PHP_INI_DIR: /usr/local/etc/php/conf.d
+      DB_HOST: "mysql"
+      DB_DATABASE: "${MYSQL_DATABASE}"
+      DB_USERNAME: "${MYSQL_USER}"
+      DB_PASSWORD: "${MYSQL_PASSWORD}"
+      DB_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      DB_ADMIN_USERNAME: "${MYSQL_ADMIN_USER}"
+      DB_ADMIN_PASSWORD: "${MYSQL_ADMIN_PASSWORD}"
+      DB_STANDARD_USERNAME: "${MYSQL_STANDARD_USER}"
+      DB_STANDARD_PASSWORD: "${MYSQL_STANDARD_PASSWORD}"
+      DB_PORT: 3306
+
+  mysql:
+    image: mysql:5
+    container_name: mysql
+    restart: always
+    expose:
+    - 3306
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      DB_USERNAME: "${MYSQL_USER}"
+      DB_PASSWORD: "${MYSQL_PASSWORD}"
+      DB_ADMIN_USERNAME: "${MYSQL_ADMIN_USER}"
+      DB_ADMIN_PASSWORD: "${MYSQL_ADMIN_PASSWORD}"
+      DB_STANDARD_USERNAME: "${MYSQL_STANDARD_USER}"
+      DB_STANDARD_PASSWORD: "${MYSQL_STANDARD_PASSWORD}"
+    volumes:
+      - "./data/db:/var/lib/mysql"
+
